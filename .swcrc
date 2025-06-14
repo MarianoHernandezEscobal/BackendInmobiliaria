@@ -1,0 +1,30 @@
+{
+    "$schema": "https://json.schemastore.org/swcrc",
+    "sourceMaps": true,
+    "jsc": {
+      "parser": {
+        "syntax": "typescript",
+        "decorators": true,
+        "dynamicImport": true
+      },
+      "baseUrl": "./",
+      "paths": {
+        "@src/*": ["src/*"],
+        "@databaseUser/*": ["src/database/user/*"],
+        "@databaseProperties/*": ["src/database/property/*"],
+        "@databaseFavorites/*": ["src/database/favorite/*"],
+        "@databaseRent/*": ["src/database/rents/*"],
+        "@property/*": ["src/property/*"],
+        "@user/*": ["src/user/*"],
+        "@clients/*": ["src/clients/*"],
+        "@database/*": ["src/database/*"],
+        "@enums/*": ["src/enums/*"],
+
+      },
+      "target": "es2022"
+    },
+    "module": {
+      "type": "commonjs"
+    },
+    "minify": false
+  }
