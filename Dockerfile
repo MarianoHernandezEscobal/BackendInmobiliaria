@@ -4,11 +4,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --production
+RUN npm install
 
 COPY . .
 
-RUN npm run build
+RUN npx nest build
 
 EXPOSE 3000
 
