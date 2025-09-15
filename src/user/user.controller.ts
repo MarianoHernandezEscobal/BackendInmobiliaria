@@ -8,7 +8,8 @@ import { AuthGuard } from './guards/session.guard';
 import { RequestWithUser } from './interfaces/request.interface';
 import { RoleGuard } from './guards/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import {  FastifyReply } from 'fastify';
+import { UserUpdateDto } from './dto/user.update.dto';
+
 @ApiTags('User')
 @Controller('user')
 export class UserController {
@@ -31,16 +32,8 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Email already in use' })
   async create(
     @Body('user') user: User,
-    @Res() response: FastifyReply
     ): Promise<AuthenticationResponseDto> {
-    await this.userService.create(user, response);
-    return response.status(201).send({ message: 'Creado correctamente' });
-  }
-
-  @Get('logout')
-  async logout(@Res({ passthrough: true }) response: FastifyReply): Promise<{ message: string }> {
-    await this.userService.logout(response);
-    return { message: 'Logout exitoso' };
+    return await this.userService.create(user);
   }
 
   @Post('login')
@@ -49,18 +42,6 @@ export class UserController {
     @Body('user') user: AuthenticationRequestDto,
   ): Promise<AuthenticationResponseDto> {
     return await this.userService.login(user);
-  }
-
-  //creame el get de todos los usuarios
-  @Get('all')
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard, RoleGuard)
-  @ApiResponse({ status: 200, description: 'All users retrieved', type: [UserResponseDto] })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  async all(): Promise<UserResponseDto[]> {
-    return await this.userService.all();
   }
   
   @Get('profile')
@@ -100,7 +81,7 @@ export class UserController {
   @Put('update') 
   @UseGuards(AuthGuard)
   async update(
-    @Body('user') user: User,
+    @Body('user') user: UserUpdateDto,
     @Req() request: RequestWithUser,
   ): Promise<AuthenticationResponseDto> {
     return await this.userService.update(user, request.user.email);
@@ -127,17 +108,6 @@ export class UserController {
     @Body('newPassword') newPassword: string,
   ): Promise<string> {
     return this.userService.resetPassword(token, newPassword);
-  }
-
-  @Post('validate-recaptcha')
-  async validateRecaptcha(@Body("recaptchaToken") recaptchaToken: string) {
-    const isValid = await this.userService.validateToken(recaptchaToken);
-    
-    if (!isValid) {
-      throw new HttpException("Error en la validación de reCAPTCHA", HttpStatus.FORBIDDEN);
-    }
-
-    return { success: true };
   }
 }
 

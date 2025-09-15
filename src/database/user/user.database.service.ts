@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { User } from '../../user/dto/user.dto';
 import { PropertyEntity } from '../property/property.entity';
+import { UserUpdateDto } from '@src/user/dto/user.update.dto';
 
 @Injectable()
 export class UsersDatabaseService {
@@ -45,10 +46,16 @@ export class UsersDatabaseService {
     return this.usersRepository.save(user);
   }
 
-  async update(user: UserEntity, userUpdated: User): Promise<UserEntity | null> {
-    const updatedProperty = this.usersRepository.merge(user, userUpdated);
-    const updatedUser = await this.usersRepository.save(updatedProperty);
-    return updatedUser;
+  async update(user: UserEntity, userUpdated: UserUpdateDto): Promise<UserEntity | null> {
+    const updatedUser = this.usersRepository.merge(user, userUpdated);
+    const savedUser = await this.usersRepository.save(updatedUser);
+    return savedUser;
+  }
+
+  async updatePassword(user: UserEntity, password: string): Promise<UserEntity | null> {
+    const updatedUser = this.usersRepository.merge(user, { password });
+    const savedUser = await this.usersRepository.save(updatedUser);
+    return savedUser;
   }
 
 }

@@ -14,6 +14,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { RecaptchaClient } from '@src/clients/recaptcha/recaptcha.client';
 import { lastValueFrom } from 'rxjs';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
+import { UserUpdateDto } from './dto/user.update.dto';
 
 @Injectable()
 export class UserService {
@@ -45,7 +46,7 @@ export class UserService {
     throw new HttpException(defaultMessage, 500);
   }
 
-  async create(create: User, reply: FastifyReply): Promise<string> {
+  async create(create: User): Promise<AuthenticationResponseDto> {
     try {
       const existingUser = await this.usersDatabaseService.findOneEmail(create.email);
       if (existingUser) {
@@ -55,11 +56,8 @@ export class UserService {
       create.password = await this.hashPassword(create.password);
       const savedUser = await this.usersDatabaseService.create(create);
       const jwt = await this.generateJwt(savedUser);
-      
-      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { httpOnly: true });
-      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), '', { httpOnly: false });
 
-      return jwt;
+      return new AuthenticationResponseDto(jwt, savedUser);
     } catch (e) {
       this.handleException(e, 'Error al crear el usuario');
     }
@@ -103,13 +101,10 @@ export class UserService {
     }
   }
 
-  async update(update: User, email: string): Promise<AuthenticationResponseDto> {
+  async update(update: UserUpdateDto, email: string): Promise<AuthenticationResponseDto> {
     try {
       const user = await this.findUserByEmailOrThrow(email);
       update.phone = update ? User.formatPhoneNumber(update.phone) : user.phone;
-      if (update.password) {
-        delete update.password;
-      }
       const updatedUser = await this.usersDatabaseService.update(user, update);
       const jwt = await this.generateJwt(updatedUser);
       return new AuthenticationResponseDto(jwt, updatedUser);
@@ -190,7 +185,7 @@ export class UserService {
           throw new NotFoundException('Usuario no encontrado');
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await this.usersDatabaseService.update(user, { ...user, password: hashedPassword });
+        await this.usersDatabaseService.updatePassword(user, hashedPassword);
         return 'Contraseña restablecida correctamente';
       } catch (error) {
         throw new BadRequestException('Token inválido o expirado');
