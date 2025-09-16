@@ -15,6 +15,7 @@ import { RecaptchaClient } from '@src/clients/recaptcha/recaptcha.client';
 import { lastValueFrom } from 'rxjs';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
 import { UserUpdateDto } from './dto/user.update.dto';
+import { CreateUser } from './dto/user.create.dto';
 
 @Injectable()
 export class UserService {
@@ -46,7 +47,7 @@ export class UserService {
     throw new HttpException(defaultMessage, 500);
   }
 
-  async create(create: User): Promise<AuthenticationResponseDto> {
+  async create(create: CreateUser): Promise<AuthenticationResponseDto> {
     try {
       const existingUser = await this.usersDatabaseService.findOneEmail(create.email);
       if (existingUser) {

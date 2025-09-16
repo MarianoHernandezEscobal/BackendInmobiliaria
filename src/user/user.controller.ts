@@ -9,6 +9,7 @@ import { RequestWithUser } from './interfaces/request.interface';
 import { RoleGuard } from './guards/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UserUpdateDto } from './dto/user.update.dto';
+import { CreateUser } from './dto/user.create.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -31,7 +32,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'User created', type: AuthenticationResponseDto })
   @ApiResponse({ status: 400, description: 'Email already in use' })
   async create(
-    @Body('user') user: User,
+    @Body('user') user: CreateUser,
     ): Promise<AuthenticationResponseDto> {
     return await this.userService.create(user);
   }
