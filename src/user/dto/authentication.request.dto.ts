@@ -9,4 +9,9 @@ export class AuthenticationRequestDto {
     @ApiProperty({ description: 'Contraseña del usuario', example: 'password123', writeOnly: true })
     @IsString()
     password: string;
+
+    constructor(_email:string, _password: string){
+        this.email = _email;
+        this.password = _password;
+    }
 }

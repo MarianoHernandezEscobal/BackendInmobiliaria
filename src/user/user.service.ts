@@ -178,7 +178,7 @@ export class UserService {
       return 'Se ha enviado un correo para restablecer la contraseña';
     }
   
-    async resetPassword(token: string, newPassword: string): Promise<string> {
+    async resetPassword(token: string, newPassword: string): Promise<AuthenticationResponseDto> {
       try {
         const payload = this.jwtService.verify(token, { secret: process.env.JWT_RESET_SECRET });
         const user = await this.usersDatabaseService.findOne(payload.userId);
@@ -187,7 +187,7 @@ export class UserService {
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await this.usersDatabaseService.updatePassword(user, hashedPassword);
-        return 'Contraseña restablecida correctamente';
+        return await this.login(new AuthenticationRequestDto(user.email, newPassword));
       } catch (error) {
         throw new BadRequestException('Token inválido o expirado');
       }

@@ -107,7 +107,7 @@ export class UserController {
   async resetPassword(
     @Body('token') token: string,
     @Body('newPassword') newPassword: string,
-  ): Promise<string> {
+  ): Promise<AuthenticationResponseDto> {
     return this.userService.resetPassword(token, newPassword);
   }
 }
