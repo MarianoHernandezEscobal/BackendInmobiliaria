@@ -45,7 +45,7 @@ export class PropertyService {
     }
   }
 
-  async create(create: PropertyDto, userRequest: UserResponseDto, images: Array<File>): Promise<PropertyDto> {
+  async create(create: PropertyDto, userRequest: UserResponseDto, images: Array<File>, facebook: boolean): Promise<PropertyDto> {
     try {
       await this.validatePropertyTitle(create.title);
       const user = await this.userDatabaseService.findOne(userRequest.id);
@@ -55,8 +55,9 @@ export class PropertyService {
       entity.approved = user.admin;
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
-      if (savedProperty.approved) {
-        // await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
+      if (savedProperty.approved && facebook) {
+        const photoIds = await this.facebookService.uploadPhotos(images);
+        await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty, photoIds)));
       }
 
       return new PropertyDto(savedProperty);
@@ -282,7 +283,7 @@ export class PropertyService {
     });
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_WEEK)
   async renewFacebookTokens() {
     try {
       console.log('[Facebook Token Refresh] Iniciando...');

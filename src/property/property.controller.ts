@@ -37,12 +37,14 @@ export class PropertyController {
   @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor("files", 25))
   async create(
+    @Body('facebook') facebook: string,
     @Body('property') property: string,
     @UploadedFiles() files: Array<File>,
     @Req() request: RequestWithUser,
   ): Promise<PropertyDto> {
     const propertyDto: PropertyDto = JSON.parse(property);
-    return await this.propertyService.create(propertyDto, request.user, files);
+    const booleanFacebook = facebook === 'true'
+    return await this.propertyService.create(propertyDto, request.user, files, booleanFacebook);
   }
 
   @Get('terms')
@@ -148,11 +150,6 @@ export class PropertyController {
 
   @Get('createdProperties')
   @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Obtener propiedades creadas por el usuario' })
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Propiedades encontradas', type: [PropertyDto] })
-  @ApiResponse({ status: 404, description: 'No se encontraron propiedades', type: NotFoundException })
-  @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
   async createdProperties(
     @Req() request: RequestWithUser
   ): Promise<PropertyDto[]> {

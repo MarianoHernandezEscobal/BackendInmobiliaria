@@ -2,16 +2,17 @@ import { HttpService } from '@nestjs/axios';
 import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CreatePost } from '@property/dto/facebook.create.request.dto';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, firstValueFrom, map, Observable } from 'rxjs';
 import { PostFacebook } from './dto/post.response.dto';
-
+import { File } from '@nest-lab/fastify-multer';
+import { default as FormData } from "form-data";
 @Injectable()
 export class FacebookClient {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
-
+  ) { }
+  //crear publicacion
   createPost(body: CreatePost): Observable<any> {
     const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
     const pageId = this.configService.get<string>('FACEBOOK_PAGE_ID');
@@ -27,6 +28,43 @@ export class FacebookClient {
         throw new HttpException({ status: 400, error: error.message }, error.response.status);
       }),
     );
+  }
+
+  async uploadPhotos(images: Array<File>): Promise<string[]> {
+    const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
+    const pageId = this.configService.get<string>('FACEBOOK_PAGE_ID');
+    const accessToken = this.configService.get<string>('FACEBOOK_USER_ACCESS_TOKEN');
+    const page_access_token = this.configService.get<string>('FACEBOOK_PAGE_ACCESS_TOKEN');
+    if (!images?.length) return [];
+
+    const uploadPromises = images.map(async (image) => {
+      try {
+        const formData = new FormData();
+        formData.append('published', 'false');
+        formData.append('access_token', page_access_token);
+        formData.append('source', image.buffer, {
+          filename: image.originalname,
+          contentType: image.mimetype,
+        });
+
+        const headers = formData.getHeaders();
+
+        const response = await firstValueFrom(
+          this.httpService.post(
+            `${facebookUrl}${pageId}/photos`,
+            formData,
+            { headers, params: { access_token: accessToken } }
+          )
+        );
+
+        return response.data.id;
+      } catch (error) {
+        console.log(error)
+      }
+
+    });
+
+    return Promise.all(uploadPromises);
   }
 
   // Actualizar una publicación en Facebook
