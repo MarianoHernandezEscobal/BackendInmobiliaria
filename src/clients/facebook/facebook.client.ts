@@ -6,6 +6,7 @@ import { catchError, firstValueFrom, map, Observable } from 'rxjs';
 import { PostFacebook } from './dto/post.response.dto';
 import { File } from '@nest-lab/fastify-multer';
 import { default as FormData } from "form-data";
+import { RenewTokenPage } from './dto/page.renew.response.dto';
 @Injectable()
 export class FacebookClient {
   constructor(
@@ -107,7 +108,7 @@ export class FacebookClient {
   }
 
   // Obtener Access Token de Página de Facebook
-  renewAccessTokenPage(): Observable<any> {
+  renewAccessTokenPage(): Observable<RenewTokenPage> {
     const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
     const userAccessToken = this.configService.get<string>('FACEBOOK_USER_ACCESS_TOKEN');
 

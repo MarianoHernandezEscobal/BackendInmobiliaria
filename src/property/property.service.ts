@@ -292,7 +292,14 @@ export class PropertyService {
       const newUserToken = userTokenResponse.access_token;
 
       const pageTokensResponse = await firstValueFrom(this.facebookService.renewAccessTokenPage());
-      const pageAccessToken = pageTokensResponse.data[0]?.access_token;
+      const pageId = this.configService.get<string>('FACEBOOK_PAGE_ID');
+
+      let pageAccessToken; 
+      for (const response of pageTokensResponse.data) {
+        if(response.id == pageId){
+          pageAccessToken = response.access_token
+        }
+      }
 
       if (newUserToken && pageAccessToken) {
         console.log('[Facebook] Nuevos Access Tokens obtenidos.');
