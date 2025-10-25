@@ -24,11 +24,8 @@ export class PropertyEntity {
     @Column()
     price: number;
 
-    @Column({
-        type: 'enum',
-        enum: PropertyTypes,
-      })
-    type: PropertyTypes;
+    @Column()
+    type: string;
     
     @Column({
         type: 'simple-array',
@@ -98,11 +95,7 @@ export class PropertyEntity {
         entity.title = property.title;
         entity.description = property.shortDescription;
         entity.price = property.price;
-        const propertyType = Object.values(PropertyTypes).find((type) => type === property.type);
-        if (!propertyType) {
-          throw new BadRequestException(`Invalid property type: ${property.type}`);
-        }
-        entity.type = propertyType;
+        entity.type = property.type;
 
         if (property?.status) {
             property?.status?.forEach((status) => {

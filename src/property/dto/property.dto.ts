@@ -29,9 +29,9 @@ export class PropertyDto {
     @IsNumber()
     price: number;
     
-    @ApiProperty({ description: 'Tipo de propiedad', enum: PropertyTypes })
-    @IsEnum(PropertyTypes, { message: 'Invalid property type' })
-    type: PropertyTypes;
+    @ApiProperty({ description: 'Tipo de propiedad' })
+    @IsString()
+    type: string;
 
     @ApiProperty({ description: 'Estado(s) de la propiedad', enum: PropertyStatus, isArray: true })
     @IsArray()
