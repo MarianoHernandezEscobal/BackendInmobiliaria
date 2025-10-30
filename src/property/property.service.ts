@@ -309,7 +309,13 @@ export class PropertyService {
           FACEBOOK_PAGE_ACCESS_TOKEN: pageAccessToken,
         });
 
-        await restartApplication();
+        process.env.FACEBOOK_USER_ACCESS_TOKEN = newUserToken
+        process.env.FACEBOOK_PAGE_ACCESS_TOKEN = pageAccessToken
+
+        console.log(process.env.FACEBOOK_USER_ACCESS_TOKEN)
+        console.log(process.env.FACEBOOK_PAGE_ACCESS_TOKEN)
+
+       // await restartApplication();
       }
     } catch (error) {
       console.error('[Facebook] Error al renovar Access Token:', error);

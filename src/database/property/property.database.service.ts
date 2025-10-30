@@ -53,7 +53,6 @@ export class PropertiesDatabaseService {
 
   async findHome(status?: PropertyStatus, type?: PropertyTypes): Promise<PropertyEntity[]> {
     const where: any = {
-      pinned: false,
       approved: true,
     };
 
