@@ -16,7 +16,6 @@ import { MESSAGES } from '@src/constants/messages';
 import { S3Service } from '@src/s3/s3.service';
 import { File } from '@nest-lab/fastify-multer';
 import { updateEnvFile } from '@src/utiles/editEnv';
-import { restartApplication } from '@src/utiles/restartApp';
 import { PropertyTypes } from '@src/enums/types.enum';
 
 @Injectable()
@@ -256,6 +255,7 @@ export class PropertyService {
       if (!property) {
         throw new NotFoundException('Propiedad no encontrada');
       }
+      await this.deleteImagesFromS3(property.imageSrc);
       await this.propertiesDatabaseService.remove(idNumber);
     } catch (e) {
       this.handleException(e, 'Error al eliminar la propiedad');
