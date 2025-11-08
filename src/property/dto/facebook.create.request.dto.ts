@@ -69,7 +69,7 @@ export class CreatePost {
 
     this.message = message;
     this.access_token = FACEBOOK_PAGE_ACCESS_TOKEN;
-    this.published = property.approved;
+    this.published = true;
 
     if (mediaFbIds?.length) {
       this.attached_media = mediaFbIds.map((id) => ({ media_fbid: id }));
