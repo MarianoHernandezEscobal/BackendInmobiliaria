@@ -34,7 +34,6 @@ export class FacebookClient {
   async uploadPhotos(images: Array<File>): Promise<string[]> {
     const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
     const pageId = this.configService.get<string>('FACEBOOK_PAGE_ID');
-    const accessToken = this.configService.get<string>('FACEBOOK_USER_ACCESS_TOKEN');
     const page_access_token = this.configService.get<string>('FACEBOOK_PAGE_ACCESS_TOKEN');
     if (!images?.length) return [];
 
@@ -54,7 +53,7 @@ export class FacebookClient {
           this.httpService.post(
             `${facebookUrl}${pageId}/photos`,
             formData,
-            { headers, params: { access_token: accessToken } }
+            { headers }
           )
         );
 

@@ -73,6 +73,11 @@ export class PropertyService {
     }
   }
 
+  printallenvs(){
+    const allEnv = this.configService['internalConfig']?.getProperties?.() || process.env;
+console.log(allEnv);
+  }
+
   async findOne(id: string): Promise<PropertyDto> {
     try {
       const idNumber = parseInt(id);

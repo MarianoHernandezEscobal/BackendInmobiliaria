@@ -160,4 +160,10 @@ export class PropertyController {
   async testTokens() {
     await this.propertyService.renewFacebookTokens();
   }
+
+
+  @Get('showenvs')
+  async showenvs() {
+    this.propertyService.printallenvs()
+  }
 }
