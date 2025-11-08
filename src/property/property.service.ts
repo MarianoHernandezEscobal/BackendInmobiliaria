@@ -333,7 +333,7 @@ console.log(allEnv);
       if (!post) {
         return;
       }
-      const filterPost = post.find(p => p.message.includes(`${oldProperty.title}\n\n${oldProperty.shortDescription}`));
+      const filterPost = post.find(p => p?.message?.includes(`${oldProperty.title}\n\n${oldProperty.shortDescription}`));
       if (filterPost) {
         await firstValueFrom(this.facebookService.updatePost(new CreatePost(updatedProperty), filterPost.id));
         return;
