@@ -167,12 +167,12 @@ console.log(allEnv);
         PropertyEntity.fromDto(updateDto, property.createdBy),
       );
   
-      // if (updatedProperty.approved) {
-      //   await Promise.all([
-      //     this.updatePostFacebook(updatedProperty, oldProperty),
-      //     this.sendMessages(updatedProperty),
-      //   ]);
-      // }
+      if (updatedProperty.approved) {
+        await Promise.all([
+          this.updatePostFacebook(updatedProperty, oldProperty),
+          // this.sendMessages(updatedProperty),
+        ]);
+      }
   
       return new PropertyDto(updatedProperty);
     } catch (error) {
@@ -288,7 +288,7 @@ console.log(allEnv);
     });
   }
 
-  @Cron(CronExpression.EVERY_WEEK)
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
   async renewFacebookTokens() {
     try {
       console.log('[Facebook Token Refresh] Iniciando...');
@@ -333,7 +333,7 @@ console.log(allEnv);
       if (!post) {
         return;
       }
-      const filterPost = post.find(p => p.message === `${oldProperty.title}\n${oldProperty.shortDescription}`);
+      const filterPost = post.find(p => p.message.includes(`${oldProperty.title}\n\n${oldProperty.shortDescription}`));
       if (filterPost) {
         await firstValueFrom(this.facebookService.updatePost(new CreatePost(updatedProperty), filterPost.id));
         return;
