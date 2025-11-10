@@ -32,7 +32,6 @@ export class CreatePost {
   constructor(property: PropertyEntity, mediaFbIds?: string[]) {
     const { FACEBOOK_PAGE_ACCESS_TOKEN } = process.env;
 
-
     let message = `🏡 ${property.title}\n\n${property.description}`;
 
     if (property.features) {

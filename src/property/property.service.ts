@@ -124,11 +124,10 @@ console.log(allEnv);
   async update(
     updateDto: PropertyDto,
     user: UserResponseDto,
-    deleteImages: string[], // Ahora acepta URLs o claves S3 directamente
+    deleteImages: string[],
     newImages: Array<File>
   ): Promise<PropertyDto> {
     try {
-      // Validar propiedad y permisos
       const property = await this.propertiesDatabaseService.findOne(updateDto.id, [
         'usersWithFavourite',
         'createdBy',
@@ -147,13 +146,11 @@ console.log(allEnv);
         delete updateDto.approved;
       }
   
-      // Eliminar y subir imágenes
       const [deletedKeys, newImageUrls] = await Promise.allSettled([
         this.deleteImagesFromS3(deleteImages),
         this.uploadImagesToS3(newImages),
       ]);
   
-      // Filtrar imágenes eliminadas y agregar nuevas
       updateDto.imageSrc = [
         ...property.imageSrc.filter((img) => !(deletedKeys.status === 'fulfilled' && deletedKeys.value.includes(img))),
         ...(newImageUrls.status === 'fulfilled' ? newImageUrls.value : []),

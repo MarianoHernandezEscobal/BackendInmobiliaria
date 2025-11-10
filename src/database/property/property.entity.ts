@@ -65,7 +65,7 @@ export class PropertyEntity {
     @Column({ type: 'simple-array' })
     imageSrc: string[];
 
-    @Column()
+    @Column({ default: 0 })
     contribution: number;
 
     @Column()
