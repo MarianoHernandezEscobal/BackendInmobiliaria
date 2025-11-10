@@ -35,13 +35,13 @@ export class PropertyEntity {
     @Column()
     lotSize: number;
 
-    @Column()
+    @Column({ default: 0 })
     area: number;
 
-    @Column()
+    @Column({ default: 0 })
     rooms: number;
 
-    @Column()
+    @Column({ default: 0 })
     bathrooms: number;
 
     @Column()
@@ -53,7 +53,7 @@ export class PropertyEntity {
     @Column()
     neighborhood: string;
 
-    @Column()
+    @Column({ default: 0 })
     yearBuilt: number;
 
     @Column()
