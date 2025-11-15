@@ -17,6 +17,7 @@ import { S3Service } from '@src/s3/s3.service';
 import { File } from '@nest-lab/fastify-multer';
 import { updateEnvFile } from '@src/utiles/editEnv';
 import { PropertyTypes } from '@src/enums/types.enum';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
 export class PropertyService {
@@ -121,62 +122,67 @@ console.log(allEnv);
     }
   }
 
-  async update(
-    updateDto: PropertyDto,
-    user: UserResponseDto,
-    deleteImages: string[],
-    newImages: Array<File>
-  ): Promise<PropertyDto> {
-    try {
-      const property = await this.propertiesDatabaseService.findOne(updateDto.id, [
-        'usersWithFavourite',
-        'createdBy',
-        'rents',
-      ]);
-  
-      if (!property) {
-        throw new NotFoundException('Propiedad no encontrada');
-      }
-  
-      if (!user.admin && updateDto?.approved !== undefined) {
-        throw new UnauthorizedException('No tienes permisos para aprobar la propiedad');
-      }
-  
-      if (!user.admin) {
-        delete updateDto.approved;
-      }
-  
-      const [deletedKeys, newImageUrls] = await Promise.allSettled([
-        this.deleteImagesFromS3(deleteImages),
-        this.uploadImagesToS3(newImages),
-      ]);
-  
-      updateDto.imageSrc = [
-        ...property.imageSrc.filter((img) => !(deletedKeys.status === 'fulfilled' && deletedKeys.value.includes(img))),
-        ...(newImageUrls.status === 'fulfilled' ? newImageUrls.value : []),
-      ];
-  
-      const oldProperty = new PropertyDto(property);
-  
-      // Actualizar la propiedad
-      const updatedProperty = await this.propertiesDatabaseService.update(
-        property,
-        PropertyEntity.fromDto(updateDto, property.createdBy),
-      );
-  
-      if (updatedProperty.approved) {
-        await Promise.all([
-          this.updatePostFacebook(updatedProperty, oldProperty),
-          // this.sendMessages(updatedProperty),
-        ]);
-      }
-  
-      return new PropertyDto(updatedProperty);
-    } catch (error) {
-      this.handleException(error, 'Error al actualizar la propiedad');
-      throw error;
+async update(
+  updateDto: UpdatePropertyDto,
+  userRequest: UserResponseDto,
+): Promise<PropertyDto> {
+  try {
+    const property = await this.propertiesDatabaseService.findOne(updateDto.id);
+    const user = await this.userDatabaseService.findOne(userRequest.id);
+
+    if (!property) {
+      throw new NotFoundException('Propiedad no encontrada');
     }
+
+    if (!user.admin && updateDto?.approved !== undefined) {
+      throw new UnauthorizedException('No tienes permisos para aprobar la propiedad');
+    }
+
+    if (!user.admin) {
+      delete updateDto.approved;
+    }
+
+    const finalUrls: string[] = [];
+    const imagesToDelete: string[] = [];
+
+    for (const img of updateDto.imageSrc) {
+      if (img.deleted) {
+        imagesToDelete.push(img.url);
+        continue;
+      }
+
+      if (img.isNew && img.file) {
+        const uploadedUrl = await this.s3Service.uploadFile(img.file.buffer, img.file.originalname)
+        finalUrls.push(uploadedUrl);
+        continue;
+      }
+
+      if (!img.isNew) {
+        finalUrls.push(img.url);
+      }
+    }
+
+    if (imagesToDelete.length > 0) {
+      await this.deleteImagesFromS3(imagesToDelete);
+    }
+    const propertieToUpdate = { ...updateDto, imageSrc: finalUrls }
+    const oldProperty = new PropertyDto(property);
+    const updatedProperty = await this.propertiesDatabaseService.update(
+      property,
+      PropertyEntity.fromDto(propertieToUpdate, user),
+    );
+
+    if (updatedProperty.approved) {
+      await this.updatePostFacebook(updatedProperty, oldProperty);
+    }
+
+    return new PropertyDto(updatedProperty);
+  } catch (error) {
+    this.handleException(error, 'Error al actualizar la propiedad');
+    throw error;
   }
+}
+
   
   
   private async deleteImagesFromS3(imageKeys: string[]): Promise<string[]> {

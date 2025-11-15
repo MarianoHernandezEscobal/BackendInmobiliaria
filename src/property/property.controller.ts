@@ -23,6 +23,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags, A
 import { TokenGuard } from './guards/token.guard';
 import { FilesInterceptor, File } from '@nest-lab/fastify-multer';
 import { RoleGuard } from '@src/user/guards/admin.guard';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 
 
@@ -77,14 +78,11 @@ export class PropertyController {
   @UseInterceptors(FilesInterceptor("files", 25))
   async update(
     @Body('property') property: string,
-    @Body('deletedImages') deletedImages: string,
-    @UploadedFiles() newImages: Array<File>,
     @Req() request: RequestWithUser
   ): Promise<PropertyDto> {
     try{
-      const propertyDto: PropertyDto = JSON.parse(property);
-      const imagesDeleted: string[] = JSON.parse(deletedImages);
-      return await this.propertyService.update(propertyDto, request.user, imagesDeleted, newImages);
+      const propertyDto: UpdatePropertyDto = JSON.parse(property);
+      return await this.propertyService.update(propertyDto, request.user);
     }catch(error){
       console.log(error);
     }
